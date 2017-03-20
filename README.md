@@ -1,4 +1,5 @@
 # Getting data from Kinesis Streams backed up to S3
+The code in this project has largely been borrowed from <https://github.com/awslabs/aws-big-data-blog/tree/master/aws-blog-firehose-lambda/kinesisFirehose>.  It has been adapted for our purposes, but is quite configurable as most of the variables can be changed by using environment variables in the lambda function.
 The project is for using AWS Lambda with Amazon Kinesis Firehose.
 
 The project is set up with a generic mvn archetype and the build occurs with Maven.
@@ -6,12 +7,6 @@ The project is set up with a generic mvn archetype and the build occurs with Mav
 Java 8 is the prescribed JDK to compile to.
 
 ## Build and install
-
-Things to look for:
-Package com.amazonaws.proserv.lambda houses the lambda functions
-- at the top of each class in the is package are instance variables.  YOU MUST EDIT these instance variables.  At the time of this writing, there was not a way to pass parameters into Java-based
-  Lambda functions - and since a jar is used there is no need to extract them to propery files (but you very well can).
-
 To build the code into a jar:
 ```
 mvn clean install
@@ -31,6 +26,13 @@ To update the function with a new jar:
 ```
 aws lambda update-function-code --function-name kixi-event-backup --zip-file fileb://$(pwd)/target/firehoseLambda-1.0.jar
 ```
+
+Necessary before a run: specify the following environment variables in your lambda function Advanced settings:
+* firehoseEndpointURL: the AWS endpoint for firehose for your region of choice (<http://docs.aws.amazon.com/general/latest/gr/rande.html#fh_region>)                                                                                                                                                               
+* deliveryStreamName: the stream we want to back up the content from                                                                                                                                                               
+* deliveryStreamRoleARN: role for the firehose, mostly allowing access to both the lambda function and S3                                                                                                                                                           
+* targetBucketARN: the S3 bucket we're targetting                                                                                                                                                                   
+* targetPrefix: the 'directory' in the S3 bucket
 
 Helper classes are provided:
 com.amazonaws.proserv.PopulateKinesisData
