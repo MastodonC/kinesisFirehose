@@ -7,6 +7,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 
+import kixi.nybling;
+
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.Map;
@@ -38,9 +40,11 @@ public class KinesisToFirehose {
         setup();
 
         for(KinesisEvent.KinesisEventRecord rec : event.getRecords()) {
-            String msg = new String(rec.getKinesis().getData().array())+"\n";
+            byte[] bytes = rec.getKinesis().getData().array();
+            String msg = new String(bytes)+"\n";
             Record deliveryStreamRecord = new Record().withData(ByteBuffer.wrap(msg.getBytes()));
 
+            logger.log(nybling.nippyByteArrayToJsonString(bytes));
 
             PutRecordRequest putRecordRequest = new PutRecordRequest()
                     .withDeliveryStreamName(deliveryStreamName)
