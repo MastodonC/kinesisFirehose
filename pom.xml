@@ -39,6 +39,12 @@
             <version>1.0.0</version>
             <!--<scope>provided</scope>-->
         </dependency>
+
+        <dependency>
+          <groupId>kixi</groupId>
+          <artifactId>kixi.nybling</artifactId>
+          <version>0.1.2</version>
+        </dependency>
   </dependencies>
 
     <build>
