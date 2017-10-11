@@ -11,27 +11,20 @@ To build the code into a jar:
 ```
 mvn clean install
 ```
-To create the Lambda jar distribution (Java 8!!!), which will be in target/firehoseLambda-VERSION.jar
 
-```
-aws lambda create-function \
---region eu-central-1 --role arn:aws:iam::165664414043:role/lambda-kinesis-role \
---function-name kixi-event-backup  \
---zip-file fileb://$(pwd)/target/firehoseLambda-1.0.jar \
---handler com.amazonaws.proserv.lambda.KinesisToFirehose::kinesisHandler \
---runtime java8
-```
+New versions should be deployed via terraform modifications:
 
-To update the function with a new jar:
-```
-aws lambda update-function-code --function-name kixi-event-backup --zip-file fileb://$(pwd)/target/firehoseLambda-1.0.jar
-```
+Upload jar to s3://staging-witan-lambda-functions/kinesisToS3.jar for staging and s3://prod-witan-lambda-functions/kinesisToS3.jar for production. This will create a new version in place.
 
-Necessary before a run: specify the following environment variables in your lambda function Advanced settings:
-* firehoseEndpointURL: the AWS endpoint for firehose for your region of choice (<http://docs.aws.amazon.com/general/latest/gr/rande.html#fh_region>)                                                                                                                                                               
-* deliveryStreamName: the stream we want to back up the content from                                                                                                                                                               
-* deliveryStreamRoleARN: role for the firehose, mostly allowing access to both the lambda function and S3                                                                                                                                                           
-* targetBucketARN: the S3 bucket we're targetting                                                                                                                                                                   
+Modify the terraboot lambda definition to reference the new version. See 'infra' namespace, lambda section.
+
+Push the changes to the target environment
+
+## Necessary before a run: specify the following environment variables in your lambda function Advanced settings:
+* firehoseEndpointURL: the AWS endpoint for firehose for your region of choice (<http://docs.aws.amazon.com/general/latest/gr/rande.html#fh_region>)
+* deliveryStreamName: the stream we want to back up the content from
+* deliveryStreamRoleARN: role for the firehose, mostly allowing access to both the lambda function and S3
+* targetBucketARN: the S3 bucket we're targetting
 * targetPrefix: the 'directory' in the S3 bucket
 
 Helper classes are provided:
