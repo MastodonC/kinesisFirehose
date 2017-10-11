@@ -9,9 +9,12 @@ import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 
 import kixi.nybling;
 
+import clojure.lang.IPersistentStack;
+
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Created by dgraeber on 6/18/2015, adapted for our own purposes by Elise Huard 20/03/2017
@@ -40,12 +43,16 @@ public class KinesisToFirehose {
         setup();
 
         for(KinesisEvent.KinesisEventRecord rec : event.getRecords()) {
-            byte[] bytes = rec.getKinesis().getData().array();
-            String msg = new String(bytes)+"\n";
-            Record deliveryStreamRecord = new Record().withData(ByteBuffer.wrap(msg.getBytes()));
+            List<String> jsonStrings = nybling.kinesisEventRecordToJsonVersions(rec);
 
-            logger.log(nybling.nippyByteArrayToJsonString(bytes));
+            String jsonForElasticSearch = jsonStrings.get(0);
 
+            //Log for pick up by lambda function
+            logger.log(jsonForElasticSearch);
+
+            String jsonForS3Storage = jsonStrings.get(1) + "\n";
+
+            Record deliveryStreamRecord = new Record().withData(ByteBuffer.wrap(jsonForS3Storage.getBytes()));
             PutRecordRequest putRecordRequest = new PutRecordRequest()
                     .withDeliveryStreamName(deliveryStreamName)
                     .withRecord(deliveryStreamRecord);
