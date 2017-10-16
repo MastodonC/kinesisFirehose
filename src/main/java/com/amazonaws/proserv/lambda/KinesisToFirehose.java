@@ -43,16 +43,14 @@ public class KinesisToFirehose {
         setup();
 
         for(KinesisEvent.KinesisEventRecord rec : event.getRecords()) {
-            List<String> jsonStrings = nybling.kinesisEventRecordToJsonVersions(rec);
-
-            String jsonForElasticSearch = jsonStrings.get(0);
+            String jsonForElasticSearch = nybling.kinesisEventRecordToJson(rec);
 
             //Log for pick up by lambda function
             logger.log(jsonForElasticSearch);
 
-            String jsonForS3Storage = jsonStrings.get(1) + "\n";
+            ByteBuffer bbuffer = nybling.kinesisEventRecordToBaldrByteBuffer(rec);
 
-            Record deliveryStreamRecord = new Record().withData(ByteBuffer.wrap(jsonForS3Storage.getBytes()));
+            Record deliveryStreamRecord = new Record().withData(bbuffer);
             PutRecordRequest putRecordRequest = new PutRecordRequest()
                     .withDeliveryStreamName(deliveryStreamName)
                     .withRecord(deliveryStreamRecord);
